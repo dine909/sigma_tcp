@@ -278,7 +278,11 @@ static void handle_connection(int fd)
 						u8to16(regWrite->paramAddr),u8to32(regWrite->dataLen) );
 				}
 
-				backend_ops->write(u8to16(regWrite->paramAddr), u8to32(regWrite->dataLen), buf + sizeof(struct adauWriteHeader_s));
+				ret = backend_ops->write(u8to16(regWrite->paramAddr), u8to32(regWrite->dataLen), buf + sizeof(struct adauWriteHeader_s));
+				if (ret < 0) {
+				    printf("Write failed: %s (%d)\n", strerror(errno), errno);
+				    exit(1);
+				}
 				if ( u8to32(regWrite->dataLen) + sizeof(struct adauWriteHeader_s) == u8to32(regWrite->totalLen) )
 					dispose = u8to32(regWrite->totalLen);
 				else
