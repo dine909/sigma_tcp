@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <error.h>
 #include <string.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
@@ -79,6 +81,7 @@ static int i2c_read(unsigned int addr, unsigned int len, uint8_t *data)
 	return ioctl(i2c_fd, I2C_RDWR, &xfer);
 }
 
+#define MAX_BLOCK_LEN 1024
 static int i2c_write(unsigned int addr, unsigned int len, const uint8_t *data)
 {
 	uint8_t msg_buf[2 + len];
@@ -87,17 +90,40 @@ static int i2c_write(unsigned int addr, unsigned int len, const uint8_t *data)
 		.msgs = msg,
 		.nmsgs = 1,
 	};
+	int ret;
 
-	msg_buf[0] = addr >> 8;
-	msg_buf[1] = addr & 0xff;
-	memcpy(msg_buf + 2, data, len);
+	while (len > 0) {
+		int block_len = len > MAX_BLOCK_LEN ? MAX_BLOCK_LEN : len;
+		int retries = 10;
 
-	msg[0].addr = i2c_dev_addr;
-	msg[0].flags = 0;
-	msg[0].buf = msg_buf;
-	msg[0].len = len + 2;
+		msg_buf[0] = addr >> 8;
+		msg_buf[1] = addr & 0xff;
+		memcpy(msg_buf + 2, data, block_len);
 
-	return ioctl(i2c_fd, I2C_RDWR, &xfer);
+		msg[0].addr = i2c_dev_addr;
+		msg[0].flags = 0;
+		msg[0].buf = msg_buf;
+		msg[0].len = block_len + 2;
+
+		printf("write %d bytes to 0x%04x\n", block_len, addr);
+		do {
+			ret = ioctl(i2c_fd, I2C_RDWR, &xfer);
+			if (ret < 0) {
+				usleep(10000);
+				printf("I2C error (%d), retries left: %d\n", errno, retries);
+			}
+		} while (ret < 0 && --retries);
+
+		if (retries == 0) {
+			printf("Fatal I2C error\n");
+			return ret;
+		}
+
+		len -= block_len;
+		addr += (block_len/4);
+		data += block_len;
+	}
+	return ret;
 }
 
 struct backend_ops i2c_backend_ops = {
