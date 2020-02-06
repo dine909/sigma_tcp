@@ -39,7 +39,7 @@ struct adauReqHeader_s {
 	uint8_t chipAddr;
 	uint8_t dataLen[4];
 	uint8_t paramAddr[2];
-	//uint8_t reserved[2];
+	uint8_t reserved[2];
 };
 struct adauRespHeader_s {
 	uint8_t controlBit;
