@@ -293,6 +293,10 @@ static void handle_connection(int fd)
 				    printf("Delay after soft reset\n");
 				    usleep(100000);
 				}
+				if (u8to16(regWrite->paramAddr) == 0xf400 || u8to16(regWrite->paramAddr) == 0xf402 || u8to16(regWrite->paramAddr) == 0xf003) {
+				    printf("Delay after hibernate\n");
+				    usleep(100000);
+				}
 				state = FSM_FLUSH;
 				break;
 			case FSM_I2C_READ:
