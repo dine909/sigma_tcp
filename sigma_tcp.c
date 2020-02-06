@@ -152,7 +152,7 @@ enum STATE_ENUM { FSM_IDLE, \
 	FSM_FLUSH, \
 	FSM_STOP, FSM_ERR };
 
-#define MAX_BUF_SIZE 2048
+#define MAX_BUF_SIZE (64*1024)
 
 uint16_t u8to16( uint8_t *u8)
 {
