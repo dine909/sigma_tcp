@@ -285,6 +285,10 @@ static void handle_connection(int fd)
 					printf( "write req: length not matching: %d - %d\n",
 						u8to32(regWrite->dataLen) + sizeof(struct adauWriteHeader_s),
 						u8to32(regWrite->totalLen) );
+				if (u8to16(regWrite->paramAddr) == 0xf890) {
+				    printf("Delay after soft reset\n");
+				    usleep(100000);
+				}
 				state = FSM_FLUSH;
 				break;
 			case FSM_I2C_READ:
