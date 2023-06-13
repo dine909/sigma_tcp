@@ -152,7 +152,7 @@ enum STATE_ENUM { FSM_IDLE, \
 	FSM_FLUSH, \
 	FSM_STOP, FSM_ERR };
 
-#define MAX_BUF_SIZE (64*1024)
+#define MAX_BUF_SIZE (256*1024)
 
 uint16_t u8to16( uint8_t *u8)
 {
@@ -183,7 +183,7 @@ static void handle_connection(int fd)
 	enum STATE_ENUM state = FSM_IDLE;
 	int count=0, ret, dispose=0;
 
-	uint8_t buf[MAX_BUF_SIZE];
+	uint8_t *buf = malloc(MAX_BUF_SIZE);
 	uint8_t *p = buf;
 	//uint16_t paramPrev = 0; // sometime the paramAddr is 0, that could mean, "use previous one", for large writes
 
@@ -355,6 +355,8 @@ static void handle_connection(int fd)
 				break;
 		}
 	}
+
+	free(buf);
 }
 
 int main(int argc, char *argv[])
