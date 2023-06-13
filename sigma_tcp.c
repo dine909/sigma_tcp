@@ -197,6 +197,7 @@ static void handle_connection(int fd)
 				if (ret <= 0)
 					break;
 				else {
+					p += ret;
 					count += ret;
 					state = FSM_GOTCHAR;
 				}
