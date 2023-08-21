@@ -195,7 +195,9 @@ static void handle_connection(int fd)
 			case FSM_IDLE:
 				ret = read(fd, p, MAX_BUF_SIZE - count);
 				if (ret <= 0)
-					break;
+				{
+					goto free_handler;
+				}
 				else {
 					p += ret;
 					count += ret;
@@ -356,7 +358,7 @@ static void handle_connection(int fd)
 				break;
 		}
 	}
-
+free_handler:
 	free(buf);
 }
 
